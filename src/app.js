@@ -34,77 +34,71 @@ async function runCommand(cmd) {
     shell.exec(`aws configure set aws_access_key_id ${key}`)
     shell.exec(`aws configure set aws_secret_access_key ${secret_key}`)
     shell.exec(`aws configure set region ${region}`)
-    if(!fs.existsSync("initCompleted")) {
-      let output = await runCommand(`aws managedblockchain get-member --network-id ${networkId} --member-id ${memberId}`)
-      output = JSON.parse(output)
+    
+    let output = await runCommand(`aws managedblockchain get-member --network-id ${networkId} --member-id ${memberId}`)
+    output = JSON.parse(output)
 
-      caEndPoint = output.Member.FrameworkAttributes.Fabric.CaEndpoint
+    caEndPoint = output.Member.FrameworkAttributes.Fabric.CaEndpoint
 
-      shell.exec(`aws s3 cp s3://us-east-1.managedblockchain/etc/managedblockchain-tls-chain.pem  /home/managedblockchain-tls-chain.pem`)
-      shell.exec(`fabric-ca-client enroll -u https://${username}:${password}@${caEndPoint} --tls.certfiles /home/managedblockchain-tls-chain.pem -M /home/admin-msp`)
-      shell.exec(`cp -r admin-msp/signcerts admin-msp/admincerts`)
+    shell.exec(`aws s3 cp s3://us-east-1.managedblockchain/etc/managedblockchain-tls-chain.pem  /home/managedblockchain-tls-chain.pem`)
+    shell.exec(`fabric-ca-client enroll -u https://${username}:${password}@${caEndPoint} --tls.certfiles /home/managedblockchain-tls-chain.pem -M /home/admin-msp`)
+    shell.exec(`cp -r admin-msp/signcerts admin-msp/admincerts`)
 
-      const configtx = `
-        ################################################################################
-        #
-        #   Section: Organizations
-        #
-        #   - This section defines the different organizational identities which will
-        #   be referenced later in the configuration.
-        #
-        ################################################################################
-        Organizations:
-            - &Org1
-                    # DefaultOrg defines the organization which is used in the sampleconfig
-                    # of the fabric.git development environment
-                Name: ${memberId}
-                    # ID to load the MSP definition as
-                ID: ${memberId}
-                MSPDir: /home/admin-msp
-                    # AnchorPeers defines the location of peers which can be used
-                    # for cross org gossip communication.  Note, this value is only
-                    # encoded in the genesis block in the Application section context    
-                AnchorPeers:    
-                    - Host: 
-                      Port:    
+    const configtx = `
+      ################################################################################
+      #
+      #   Section: Organizations
+      #
+      #   - This section defines the different organizational identities which will
+      #   be referenced later in the configuration.
+      #
+      ################################################################################
+      Organizations:
+          - &Org1
+                  # DefaultOrg defines the organization which is used in the sampleconfig
+                  # of the fabric.git development environment
+              Name: ${memberId}
+                  # ID to load the MSP definition as
+              ID: ${memberId}
+              MSPDir: /home/admin-msp
+                  # AnchorPeers defines the location of peers which can be used
+                  # for cross org gossip communication.  Note, this value is only
+                  # encoded in the genesis block in the Application section context    
+              AnchorPeers:    
+                  - Host: 
+                    Port:    
 
-        ################################################################################
-        #
-        #   SECTION: Application
-        #
-        #   - This section defines the values to encode into a config transaction or
-        #   genesis block for application related parameters
-        #
-        ################################################################################
-        Application: &ApplicationDefaults
-                # Organizations is the list of orgs which are defined as participants on
-                # the application side of the network
-            Organizations:
+      ################################################################################
+      #
+      #   SECTION: Application
+      #
+      #   - This section defines the values to encode into a config transaction or
+      #   genesis block for application related parameters
+      #
+      ################################################################################
+      Application: &ApplicationDefaults
+              # Organizations is the list of orgs which are defined as participants on
+              # the application side of the network
+          Organizations:
 
-        ################################################################################
-        #
-        #   Profile
-        #
-        #   - Different configuration profiles may be encoded here to be specified
-        #   as parameters to the configtxgen tool
-        #
-        ################################################################################
-        Profiles:
-            OneOrgChannel:
-                Consortium: AWSSystemConsortium
-                Application:
-                    <<: *ApplicationDefaults
-                    Organizations:
-                        - *Org1
-      `
+      ################################################################################
+      #
+      #   Profile
+      #
+      #   - Different configuration profiles may be encoded here to be specified
+      #   as parameters to the configtxgen tool
+      #
+      ################################################################################
+      Profiles:
+          OneOrgChannel:
+              Consortium: AWSSystemConsortium
+              Application:
+                  <<: *ApplicationDefaults
+                  Organizations:
+                      - *Org1
+    `
 
-      fs.writeFileSync('./configtx.yaml', configtx)
-
-      process.env['MSP_PATH'] = '/home/admin-msp'
-      process.env['MSP'] = memberId
-      process.env['ORDERER'] = orderer
-      process.env['PEER'] = peer
-    }
+    fs.writeFileSync('./configtx.yaml', configtx)
   } catch(e) {
     console.log(e)
     process.exit();
