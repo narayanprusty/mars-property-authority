@@ -1,0 +1,10 @@
+{
+  "name": "hlf-client",
+  "dependencies": {
+    "express": "^4.16.4",
+    "shelljs": "^0.8.3"
+  },
+  "scripts": {
+    "start": "node src/app.js"
+  }
+}
