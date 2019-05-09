@@ -4,14 +4,14 @@ const app = require('express')()
 
 const workingDir = process.env.WORKDIR || '/home'
 const networkId = process.env.NETWORK_ID
-const memberId = process.env.MEMBER_ID
+const memberId = process.env.CORE_PEER_LOCALMSPID
 const region = process.env.AWS_REGION
 const key = process.env.AWS_KEY
 const secret_key = process.env.AWS_SECRET_KEY
 const username = process.env.CA_USERNAME
 const password = process.env.CA_PASSWORD
 const orderer = process.env.ORDERER_URL
-const peer = process.env.PEER_URL
+const peer = process.env.CORE_PEER_ADDRESS
 
 let caEndPoint = null
 
