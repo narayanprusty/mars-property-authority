@@ -12,6 +12,7 @@ const EthCrypto = require('eth-crypto');
 const sha256 = require('sha256')
 const eccrypto = require("eccrypto");
 const btoa = require('btoa');
+const cors = require('cors')
 
 const networkId = process.env.NETWORK_ID
 const memberId = process.env.CORE_PEER_LOCALMSPID
